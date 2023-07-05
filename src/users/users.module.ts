@@ -9,14 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { Team } from 'src/teams/entities/team.entity';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ load: [env] }),
-    JwtModule.register({
-      secret: env().jwt.secret,
-      signOptions: { expiresIn: '1d' },
-    }),
-    TypeOrmModule.forFeature([User, Team]),
-  ],
+  imports: [TypeOrmModule.forFeature([User, Team])],
   controllers: [UsersController],
   providers: [UsersService],
 })
