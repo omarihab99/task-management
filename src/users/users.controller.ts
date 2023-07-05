@@ -20,7 +20,7 @@ import {
 } from './dto/update-user.dto';
 import { IdParamPipe } from './pipes/id-param.pipe';
 import { IsAuthenticatedGuard } from 'src/auth/guards/is-authenticated.guard';
-import { Roles } from 'src/auth/decorators/role.decorator';
+import { Roles } from 'src/shared/decorators/role.decorator';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Request } from 'express';
 import { UpdateUserPipe } from './pipes/update-user.pipe';

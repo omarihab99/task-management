@@ -13,7 +13,7 @@ import { AuthService } from './auth.service';
 import { SigninDto } from './dto/signin.dto';
 import { SignupDto } from './dto/signup.dto';
 import { SignupPipe } from './pipes/signup.pipe';
-import { Roles } from './decorators/role.decorator';
+import { Roles } from '../shared/decorators/role.decorator';
 import { IsAuthenticatedGuard } from './guards/is-authenticated.guard';
 import { RoleGuard } from './guards/role.guard';
 import {

@@ -9,9 +9,16 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { Socket, Server } from 'socket.io';
-import { UseFilters, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  UseFilters,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { AllExceptionsFilter } from 'src/shared/filters/AllExceptionFilter.filter';
 import { FindTaskDto } from './dto/find-task.dto';
+import { Roles } from 'src/shared/decorators/role.decorator';
+import { RoleGuard } from 'src/shared/guards/role.guard';
 @WebSocketGateway({ transports: ['websocket'] })
 @UseFilters(new AllExceptionsFilter())
 export class TasksGateway {
@@ -20,6 +27,8 @@ export class TasksGateway {
 
   constructor(private readonly tasksService: TasksService) {}
 
+  @Roles('admin', 'coach')
+  @UseGuards(RoleGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @SubscribeMessage('createTask')
   async create(
@@ -47,6 +56,8 @@ export class TasksGateway {
     client.emit('response', await this.tasksService.findOne(findTaskDto.id));
   }
 
+  @Roles('admin', 'coach')
+  @UseGuards(RoleGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @SubscribeMessage('updateTask')
   async update(
@@ -59,6 +70,8 @@ export class TasksGateway {
     );
   }
 
+  @Roles('admin', 'coach')
+  @UseGuards(RoleGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @SubscribeMessage('removeTask')
   async remove(
