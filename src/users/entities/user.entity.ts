@@ -1,9 +1,14 @@
+import { Assignment } from 'src/assignments/entities/assignment.entity';
+import { Task } from 'src/tasks/entities/task.entity';
 import { Team } from 'src/teams/entities/team.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
+  OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -30,8 +35,9 @@ export class User {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
   @ManyToOne(() => Team, (team) => team.id, {
-    onDelete: 'SET NULL',
     nullable: true,
   })
   team: Team;
+  @OneToMany(() => Assignment, (assignment) => assignment.user)
+  assignments: [];
 }

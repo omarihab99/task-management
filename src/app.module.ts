@@ -13,6 +13,8 @@ import { TasksModule } from './tasks/tasks.module';
 import { Task } from './tasks/entities/task.entity';
 import { AppGateway } from './app.gateway';
 import { JwtModule } from '@nestjs/jwt';
+import { AssignmentsModule } from './assignments/assignments.module';
+import { Assignment } from './assignments/entities/assignment.entity';
 
 @Module({
   imports: [
@@ -31,13 +33,14 @@ import { JwtModule } from '@nestjs/jwt';
       port: env().postgres.port,
       synchronize: true,
       logging: false,
-      entities: [User, Team, Task],
+      entities: [User, Team, Task, Assignment],
     }),
     TypeOrmModule.forFeature([User]),
     UsersModule,
     AuthModule,
     TeamsModule,
     TasksModule,
+    AssignmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppGateway],
