@@ -24,7 +24,12 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    return await this.Users.findOne({ where: { id }, relations: ['team'] });
+    const user = await this.Users.findOne({
+      where: { id },
+      relations: ['team'],
+    });
+    if (!user) throw new BadRequestException('user not found');
+    return user;
   }
 
   async update(id: string, updateUserDto: AdminUpdateUserDto | UpdateUserDto) {

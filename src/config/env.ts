@@ -3,6 +3,7 @@ export default () => ({
   environment: process.env.ENV,
   postgres: {
     db: process.env.PG_DATABASE,
+    dbTest: process.env.PG_DATABASE_TEST,
     username: process.env.PG_USERNAME,
     password: process.env.PG_PASSWORD,
     host: process.env.PG_HOST,

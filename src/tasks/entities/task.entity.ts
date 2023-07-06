@@ -1,11 +1,8 @@
 import { Assignment } from 'src/assignments/entities/assignment.entity';
-import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
   OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
