@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import {
   AdminUpdateUserDto,
   UpdateUserDto,
@@ -20,52 +20,42 @@ export class UsersService {
     private jwtService: JwtService,
   ) {}
   async findAll() {
-    return await this.Users.find({ relations: ['team'] });
+    return await this.Users.find({
+      relations: ['team'],
+      select: ['id', 'email', 'role', 'name'],
+    });
   }
 
   async findOne(id: string) {
     const user = await this.Users.findOne({
       where: { id },
       relations: ['team'],
+      select: ['id', 'email', 'role', 'name'],
     });
     if (!user) throw new BadRequestException('user not found');
     return user;
   }
 
-  async update(id: string, updateUserDto: AdminUpdateUserDto | UpdateUserDto) {
-    const user = await this.Users.findOne({ where: { id } });
-    if (!user) throw new BadRequestException('user not found');
-    if (
-      updateUserDto.name &&
-      (await this.Users.findOne({
-        where: { name: updateUserDto.name, id: Not(id) },
-      }))
-    )
-      throw new BadRequestException('name already axists');
-    if (
-      (updateUserDto as AdminUpdateUserDto).email &&
-      (await this.Users.findOne({
-        where: {
-          email: (updateUserDto as AdminUpdateUserDto).email,
-          id: Not(id),
-        },
-      }))
-    )
-      throw new BadRequestException('email already axists');
-    const team = await this.Teams.findOne({
-      where: { id: (updateUserDto as AdminUpdateUserDto).team },
-    });
-    if ((updateUserDto as AdminUpdateUserDto).team && !team)
-      throw new BadRequestException('team not found');
-    if ((updateUserDto as AdminUpdateUserDto).team)
+  async update(
+    id: string,
+    updateUserDto: AdminUpdateUserDto | UpdateUserDto,
+  ): Promise<boolean> {
+    if ((updateUserDto as AdminUpdateUserDto).team) {
+      const team = await this.Teams.findOne({
+        where: { id: (updateUserDto as AdminUpdateUserDto).team },
+      });
       updateUserDto['team'] = team;
-    return this.Users.save({ ...user, ...(updateUserDto as [unknown]) });
+    }
+    const res = await this.Users.update(id, {
+      id,
+      ...(updateUserDto as [unknown]),
+    });
+    return res.affected > 0;
   }
 
-  async remove(id: string) {
-    const user = await this.Users.findOne({ where: { id } });
-    if (!user) throw new BadRequestException('user not found');
-    await this.Users.remove(user);
+  async remove(id: string): Promise<boolean> {
+    const res = await this.Users.delete({ id });
+    return res.affected > 0;
   }
 
   async updatePassword(id: string, data: UpdateUserPasswordDto) {
@@ -75,13 +65,16 @@ export class UsersService {
       !compareSync(data.oldPassword + env().bcrypt.paper, user.password)
     )
       throw new BadRequestException('incorrect old password');
+
     const hashedPassword = hashSync(
       data.newPassword + env().bcrypt.paper,
       env().bcrypt.salt,
     );
 
-    const token = this.jwtService.sign({ userId: user.id });
-
-    return await this.Users.save({ ...user, password: hashedPassword, token });
+    const res = await this.Users.update(id, {
+      password: hashedPassword,
+      token: null,
+    });
+    return res.affected > 0;
   }
 }

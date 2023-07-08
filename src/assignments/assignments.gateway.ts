@@ -15,7 +15,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { AllExceptionsFilter } from 'src/shared/filters/AllExceptionFilter.filter';
+import { AllExceptionsFilter } from 'src/shared/filters/ws-filters/AllExceptionFilter.filter';
 import { UpdateAssignmentDto } from './dto/update-assignment.dto';
 import { FindAssignmentDto } from './dto/find-assignment.dto';
 import { Roles } from 'src/shared/decorators/role.decorator';

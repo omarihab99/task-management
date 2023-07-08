@@ -15,6 +15,7 @@ import { AppGateway } from './app.gateway';
 import { JwtModule } from '@nestjs/jwt';
 import { AssignmentsModule } from './assignments/assignments.module';
 import { Assignment } from './assignments/entities/assignment.entity';
+import { ReviewsModule } from './reviews/reviews.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { Assignment } from './assignments/entities/assignment.entity';
     TeamsModule,
     TasksModule,
     AssignmentsModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppGateway],

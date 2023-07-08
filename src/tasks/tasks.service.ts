@@ -12,8 +12,8 @@ import { IsAuthenticatedGuard } from 'src/shared/guards/is-authenticated.guard';
 export class TasksService {
   constructor(@InjectRepository(Task) private Tasks: Repository<Task>) {}
   async create(createTaskDto: CreateTaskDto) {
-    if (await this.Tasks.findOne({ where: { title: createTaskDto.title } }))
-      throw new BadRequestException('task already exists');
+    // if (await this.Tasks.findOne({ where: { title: createTaskDto.title } }))
+    //   throw new BadRequestException('task already exists');
     return await this.Tasks.save({ id: uuid(), ...createTaskDto });
   }
   async findAll() {

@@ -2,8 +2,10 @@ export default () => ({
   port: process.env.PORT || 5000,
   environment: process.env.ENV,
   postgres: {
-    db: process.env.PG_DATABASE,
-    dbTest: process.env.PG_DATABASE_TEST,
+    db:
+      process.env.ENV === 'test'
+        ? process.env.PG_DATABASE_TEST
+        : process.env.PG_DATABASE,
     username: process.env.PG_USERNAME,
     password: process.env.PG_PASSWORD,
     host: process.env.PG_HOST,
