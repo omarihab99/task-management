@@ -16,6 +16,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AssignmentsModule } from './assignments/assignments.module';
 import { Assignment } from './assignments/entities/assignment.entity';
 import { ReviewsModule } from './reviews/reviews.module';
+import { Review } from './reviews/entities/review.entity';
 
 @Module({
   imports: [
@@ -34,7 +35,7 @@ import { ReviewsModule } from './reviews/reviews.module';
       port: env().postgres.port,
       synchronize: true,
       logging: false,
-      entities: [User, Team, Task, Assignment],
+      entities: [User, Team, Task, Assignment, Review],
     }),
     TypeOrmModule.forFeature([User]),
     UsersModule,

@@ -1,10 +1,13 @@
+import { Review } from 'src/reviews/entities/review.entity';
 import { Task } from 'src/tasks/entities/task.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
+  OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -22,8 +25,12 @@ export class Assignment {
   createdAt: Date;
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
-  @ManyToOne(() => Task, (task) => task.assignments)
+  @ManyToOne(() => Task, (task) => task.assignments, { onDelete: 'CASCADE' })
+  @Index(['task', 'user'], { unique: true })
   task: Task;
-  @ManyToOne(() => User, (user) => user.assignments)
+  @ManyToOne(() => User, (user) => user.assignments, { onDelete: 'CASCADE' })
+  @Index(['task', 'user'], { unique: true })
   user: User;
+  @OneToMany(() => Review, (review) => review.assignment)
+  reviews: Review[];
 }

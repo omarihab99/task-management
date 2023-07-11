@@ -35,10 +35,8 @@ export class IsAuthenticatedGuard implements CanActivate {
 
   private verifyToken(token: string): { userId: string } | undefined {
     try {
-      const payload: { userId: string } = this.jwtService.verify(token);
-      return payload;
+      return this.jwtService.verify(token) as { userId: string };
     } catch (error) {
-      console.log(error);
       return undefined;
     }
   }

@@ -16,10 +16,14 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AllExceptionsFilter } from 'src/shared/filters/ws-filters/AllExceptionFilter.filter';
-import { UpdateAssignmentDto } from './dto/update-assignment.dto';
+import {
+  UpdateAssignmentDto,
+  UpdateStatusDto,
+} from './dto/update-assignment.dto';
 import { FindAssignmentDto } from './dto/find-assignment.dto';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { RoleGuard } from 'src/shared/guards/role.guard';
+import { StatusPipe } from './pipes/status.pipe';
 
 @WebSocketGateway()
 @UseFilters(new AllExceptionsFilter())
@@ -80,6 +84,24 @@ export class AssignmentsGateway {
         ) as { userId: string }
       ).userId,
       updateAssignmentDto,
+    );
+    this.server.emit('updateExistsAssignment', assignment);
+  }
+
+  @Roles('trainee', 'coach')
+  @UseGuards(RoleGuard)
+  @SubscribeMessage('updateAssignmentStatus')
+  async updateStatus(
+    @ConnectedSocket() client: Socket,
+    @MessageBody(StatusPipe) updateStatusDto: UpdateStatusDto,
+  ) {
+    const assignment = await this.assignmentsService.updateStatus(
+      (
+        this.jwtService.verify(
+          client.handshake.headers.authorization.split(' ')[1],
+        ) as { userId: string }
+      ).userId,
+      updateStatusDto,
     );
     this.server.emit('updateExistsAssignment', assignment);
   }

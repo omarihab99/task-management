@@ -17,5 +17,5 @@ export class CreateTaskDto {
   @IsPositive()
   sprint: number;
   @IsDateString()
-  deadlineAt: Date;
+  deadlineAt: string;
 }

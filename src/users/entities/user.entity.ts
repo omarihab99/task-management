@@ -1,4 +1,5 @@
 import { Assignment } from 'src/assignments/entities/assignment.entity';
+import { Review } from 'src/reviews/entities/review.entity';
 import { Team } from 'src/teams/entities/team.entity';
 import {
   Column,
@@ -33,8 +34,11 @@ export class User {
   updatedAt: Date;
   @ManyToOne(() => Team, (team) => team.id, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   team: Team;
   @OneToMany(() => Assignment, (assignment) => assignment.user)
-  assignments: [];
+  assignments: Assignment[];
+  @OneToMany(() => Review, (review) => review.user)
+  reviews: Review[];
 }

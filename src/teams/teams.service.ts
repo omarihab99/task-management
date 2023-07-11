@@ -13,18 +13,28 @@ export class TeamsService {
     @InjectRepository(Team) private Teams: Repository<Team>,
     @InjectRepository(User) private Users: Repository<User>,
   ) {}
-  async create(createTeamDto: CreateTeamDto) {
-    const cordinator = await this.verifyCreateTeamDto(createTeamDto);
-    return this.Teams.save({
+  async create(data: CreateTeamDto) {
+    if (data.cordinator) {
+      const cordinator = await this.Users.findOne({
+        where: { id: data.cordinator },
+      });
+      if (!cordinator) throw new BadRequestException('cordinator not found');
+      data.cordinator = cordinator as any;
+      data['users'] = [cordinator];
+    }
+    return await this.Teams.save({
       id: uuid(),
-      name: createTeamDto.name,
-      cordinator,
+      ...(data as any),
     });
   }
 
   async findAll() {
     return await this.Teams.find({
       relations: ['cordinator', 'users'],
+      select: {
+        cordinator: { id: true, email: true, name: true },
+        users: { id: true, email: true, name: true },
+      },
     });
   }
 
@@ -32,65 +42,34 @@ export class TeamsService {
     const team = await this.Teams.findOne({
       where: { id },
       relations: ['cordinator', 'users'],
+      select: {
+        cordinator: { id: true, email: true, name: true },
+        users: { id: true, email: true, name: true },
+      },
     });
     if (!team) throw new BadRequestException('team not found');
     return team;
   }
 
-  async update(id: string, updateTeamDto: UpdateTeamDto) {
-    const cordinator = await this.verifyupdateTeamDto(id, updateTeamDto);
-    const newTeam = { id, name: updateTeamDto.name };
-    if (cordinator) newTeam['cordinator'] = cordinator;
-    return this.Teams.save(newTeam);
+  async update(id: string, data: UpdateTeamDto) {
+    // check if user exists in team users before be a team cordinator
+    if (data.cordinator) {
+      const team = await this.Teams.findOne({
+        where: { id, users: { id: data.cordinator } },
+        relations: ['users'],
+        select: { users: { id: true } },
+      });
+      if (!team)
+        throw new BadRequestException('cordinator do not belong to this team');
+      data.cordinator = (await this.Users.findOneBy({
+        id: data.cordinator,
+      })) as any;
+    }
+
+    return (await this.Teams.update(id, data as any)).affected > 0;
   }
 
   async remove(id: string) {
-    const team = await this.Teams.findOne({ where: { id } });
-    if (!team) throw new BadRequestException('team not found');
-    this.Teams.remove(team);
-  }
-
-  private async verifyCreateTeamDto(createTeamDto: CreateTeamDto) {
-    if (await this.Teams.findOne({ where: { name: createTeamDto.name } }))
-      throw new BadRequestException('team is already exists');
-    const cordinator = createTeamDto.cordinator
-      ? await this.Users.findOne({ where: { id: createTeamDto.cordinator } })
-      : null;
-    if (createTeamDto.cordinator && !cordinator)
-      throw new BadRequestException('cordinator user not found');
-    if (
-      cordinator &&
-      (await this.Teams.findOne({
-        where: { cordinator: { id: cordinator.id } },
-      }))
-    )
-      throw new BadRequestException('user already cordinator at a team');
-
-    return cordinator;
-  }
-  private async verifyupdateTeamDto(id: string, updateTeamDto: UpdateTeamDto) {
-    if (!(await this.Teams.findOne({ where: { id } })))
-      throw new BadRequestException('team not found');
-    if (
-      updateTeamDto.name &&
-      (await this.Teams.findOne({
-        where: { name: updateTeamDto.name, id: Not(id) },
-      }))
-    )
-      throw new BadRequestException('team is already exists');
-    const cordinator = updateTeamDto.cordinator
-      ? await this.Users.findOne({ where: { id: updateTeamDto.cordinator } })
-      : null;
-    if (updateTeamDto.cordinator && !cordinator)
-      throw new BadRequestException('cordinator user not found');
-    if (
-      cordinator &&
-      (await this.Teams.findOne({
-        where: { cordinator: { id: cordinator.id }, id: Not(id) },
-      }))
-    )
-      throw new BadRequestException('user already cordinator at a team');
-
-    return cordinator;
+    return (await this.Teams.delete({ id })).affected > 0;
   }
 }

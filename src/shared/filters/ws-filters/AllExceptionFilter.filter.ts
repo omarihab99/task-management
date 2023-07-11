@@ -9,8 +9,7 @@ export class AllExceptionsFilter extends BaseWsExceptionFilter {
     const client: Server = host.switchToWs().getClient();
     if (exception instanceof HttpException)
       client.emit('errors', exception.getResponse());
-    else if (exception instanceof WsException)
-      client.emit('errors', exception.message);
+    else if (exception instanceof WsException) client.emit('errors', exception);
     else if (exception instanceof TypeORMError) {
       const detail = (exception as unknown as { detail: string }).detail;
       client.emit('errors', detail);

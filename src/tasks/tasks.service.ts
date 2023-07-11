@@ -1,48 +1,42 @@
-import { BadRequestException, Injectable, UseGuards } from '@nestjs/common';
+import { Injectable, UseGuards } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './entities/task.entity';
-import { Not, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
 import { IsAuthenticatedGuard } from 'src/shared/guards/is-authenticated.guard';
+import { WsException } from '@nestjs/websockets';
 
 @Injectable()
 @UseGuards(IsAuthenticatedGuard)
 export class TasksService {
   constructor(@InjectRepository(Task) private Tasks: Repository<Task>) {}
+
   async create(createTaskDto: CreateTaskDto) {
-    // if (await this.Tasks.findOne({ where: { title: createTaskDto.title } }))
-    //   throw new BadRequestException('task already exists');
     return await this.Tasks.save({ id: uuid(), ...createTaskDto });
   }
+
   async findAll() {
     return await this.Tasks.find();
   }
 
   async findOne(id: string) {
     const task = await this.Tasks.findOne({ where: { id } });
-    if (!task) throw new BadRequestException('task not found');
+    if (!task) throw new WsException('task not found');
     return task;
   }
 
   async update(id: string, updateTaskDto: UpdateTaskDto) {
-    if (
-      updateTaskDto.title &&
-      (await this.Tasks.findOne({
-        where: { title: updateTaskDto.title, id: Not(id) },
-      }))
-    )
-      throw new BadRequestException('task is already exists');
-    const task = await this.Tasks.findOne({ where: { id } });
-    if (!task) throw new BadRequestException('task not found');
-    return await this.Tasks.save({ ...task, ...updateTaskDto });
+    if ((await this.Tasks.update({ id }, updateTaskDto)).affected === 0)
+      throw new WsException('cannot update task');
+    return await this.Tasks.findOneBy({ id });
   }
 
   async remove(id: string) {
     const task = await this.Tasks.findOne({ where: { id } });
-    if (!task) throw new BadRequestException('task not found');
-    this.Tasks.remove(task);
+    if (!task) throw new WsException('task not found');
+    await this.Tasks.remove(task);
     return task;
   }
 }

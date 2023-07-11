@@ -1,16 +1,32 @@
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OnGatewayConnection, WebSocketGateway } from '@nestjs/websockets';
+import {
+  ConnectedSocket,
+  MessageBody,
+  OnGatewayConnection,
+  SubscribeMessage,
+  WebSocketGateway,
+} from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 import { User } from './users/entities/user.entity';
 import { Repository } from 'typeorm';
 
-@WebSocketGateway()
+@WebSocketGateway({ transports: ['websocket'] })
 export class AppGateway implements OnGatewayConnection {
   constructor(
     @InjectRepository(User) private Users: Repository<User>,
     private jwtService: JwtService,
   ) {}
+
+  @SubscribeMessage('helloSocket')
+  async create(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    data: unknown,
+  ) {
+    console.log(data);
+    return client.emit('helloSocket', data);
+  }
 
   async handleConnection(client: Socket, ...args: any[]) {
     const [tokenType, token] = (

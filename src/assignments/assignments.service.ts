@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAssignmentDto } from './dto/create-assignment.dto';
-import { UpdateAssignmentDto } from './dto/update-assignment.dto';
+import {
+  UpdateAssignmentDto,
+  UpdateStatusDto,
+} from './dto/update-assignment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
@@ -21,41 +24,29 @@ export class AssignmentsService {
     const user = await this.Users.findOne({ where: { id: userId } });
     const task = await this.Tasks.findOne({ where: { id: data.task } });
     if (!task) throw new WsException('task not found');
-    if (
-      await this.Assignments.findOne({
-        where: { user: { id: user.id }, task: { id: task.id } },
-      })
-    )
-      throw new WsException('assignment already exists');
+    data.task = task as any;
+    data['user'] = user;
     const assignment = this.Assignments.create({
       id: uuid(),
-      source: data.source,
+      ...(data as any),
     });
-    if (data.status) assignment.status = data.status;
-    if (data.comment) assignment.comment = data.comment;
-    assignment.task = task;
-    assignment.user = user;
-    return await this.Assignments.save(assignment);
+    const savedAssignment = (await this.Assignments.save(
+      assignment,
+    )) as unknown as Assignment;
+    return await this.Assignments.findOne({
+      where: { id: savedAssignment.id },
+      ...this.assignmentFilter,
+    });
   }
 
   async findAll() {
-    return await this.Assignments.find({
-      relations: ['user', 'task'],
-      select: {
-        user: { id: true, name: true, email: true },
-        task: { id: true, title: true },
-      },
-    });
+    return await this.Assignments.find(this.assignmentFilter);
   }
 
   async findOne(id: string) {
-    const assignment = await this.Assignments.find({
+    const assignment = await this.Assignments.findOne({
       where: { id },
-      relations: ['user', 'task'],
-      select: {
-        user: { id: true, name: true, email: true },
-        task: { id: true, title: true },
-      },
+      ...this.assignmentFilter,
     });
     if (!assignment) throw new WsException('assignment not found');
     return assignment;
@@ -70,19 +61,74 @@ export class AssignmentsService {
     if (!assignment) throw new WsException('assignment not found');
     if (assignment.user.id !== userId)
       throw new WsException('cannot edit this assignment');
-    return await this.Assignments.save({ ...assignment, ...data });
+    await this.Assignments.update({ id: data.id }, data);
+    return await this.Assignments.findOne({
+      where: { id: data.id },
+      ...this.assignmentFilter,
+    });
+  }
+
+  async updateStatus(userId: string, data: UpdateStatusDto) {
+    const user = await this.Users.findOneBy({ id: userId });
+    const assignment = await this.Assignments.findOne({
+      where: { id: data.id },
+      relations: ['user', 'reviews'],
+      select: { user: { id: true }, reviews: { id: true } },
+    });
+    if (!assignment) throw new WsException('assignment not found');
+    if (data.status === 'ask feedback') {
+      if (user.id !== assignment.user.id)
+        throw new WsException('cannot edit this assignment');
+      if (assignment.reviews.length < 2)
+        throw new WsException('must be reviewed by 2 users');
+    } else if (data.status === 'done' && user.role !== 'coach')
+      // TODO: check if coach created the feedback
+      throw new WsException('Forbidden');
+    else throw new WsException('cannot udpate status');
+    await this.Assignments.update(
+      { id: assignment.id },
+      { status: data.status },
+    );
+    return await this.Assignments.findOne({
+      where: { id: data.id },
+      ...this.assignmentFilter,
+    });
   }
 
   async remove(userId: string, id: string) {
     const assignment = await this.Assignments.findOne({
       where: { id },
-      relations: ['user'],
-      select: { user: { id: true } },
+      ...this.assignmentFilter,
     });
     if (!assignment) throw new WsException('assignment not found');
     if (assignment.user.id !== userId)
       throw new WsException('cannot edit this assignment');
-    await this.Assignments.remove(assignment);
+    await this.Assignments.delete({ id });
     return assignment;
   }
+
+  private assignmentFilter = {
+    relations: ['user', 'task', 'user.team'],
+    select: {
+      id: true,
+      source: true,
+      status: true,
+      comment: true,
+      createdAt: true,
+      updatedAt: true,
+      user: {
+        id: true,
+        name: true,
+        email: false,
+        team: { id: true, name: true },
+      },
+      task: {
+        id: true,
+        title: true,
+        topic: true,
+        sprint: true,
+        deadlineAt: true,
+      },
+    },
+  };
 }

@@ -8,6 +8,8 @@ import {
   UseGuards,
   Get,
   Put,
+  UseFilters,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SigninDto } from './dto/signin.dto';
@@ -20,8 +22,10 @@ import {
   ForgetPasswordDto,
   ResetUserPasswordDto,
 } from './dto/forget-password.dto';
+import { DbExceptionFilter } from 'src/shared/filters/http-filters/db-exception.filter';
 
 @Controller('auth')
+@UseFilters(DbExceptionFilter)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -35,10 +39,11 @@ export class AuthController {
   @Post('signup')
   @Roles('admin')
   @UseGuards(IsAuthenticatedGuard, RoleGuard)
-  @HttpCode(200)
+  @HttpCode(201)
   @UsePipes(SignupPipe)
-  signup(@Body() signupDto: SignupDto) {
-    return this.authService.signup(signupDto);
+  async signup(@Body() signupDto: SignupDto) {
+    if (!(await this.authService.signup(signupDto)))
+      throw new BadRequestException('cannot create user');
   }
 
   @Get('forget-password')
@@ -49,7 +54,10 @@ export class AuthController {
 
   @Put('reset-password')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  resetForgetedPassword(@Body() resetUserPasswordDto: ResetUserPasswordDto) {
-    return this.authService.resetForgetedPassword(resetUserPasswordDto);
+  async resetForgetedPassword(
+    @Body() resetUserPasswordDto: ResetUserPasswordDto,
+  ) {
+    if (!(await this.authService.resetForgetedPassword(resetUserPasswordDto)))
+      throw new BadRequestException('cannot reset password');
   }
 }

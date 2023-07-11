@@ -9,6 +9,9 @@ import {
   UsePipes,
   ValidationPipe,
   UseGuards,
+  BadRequestException,
+  UseFilters,
+  HttpCode,
 } from '@nestjs/common';
 import { TeamsService } from './teams.service';
 import { CreateTeamDto } from './dto/create-team.dto';
@@ -17,9 +20,11 @@ import { IdParamPipe } from 'src/users/pipes/id-param.pipe';
 import { IsAuthenticatedGuard } from 'src/auth/guards/is-authenticated.guard';
 import { RoleGuard } from 'src/auth/guards/role.guard';
 import { Roles } from 'src/shared/decorators/role.decorator';
+import { DbExceptionFilter } from 'src/shared/filters/http-filters/db-exception.filter';
 
 @Controller('teams')
 @UseGuards(IsAuthenticatedGuard)
+@UseFilters(DbExceptionFilter)
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
@@ -27,8 +32,9 @@ export class TeamsController {
   @Roles('admin')
   @UseGuards(RoleGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  create(@Body() createTeamDto: CreateTeamDto) {
-    return this.teamsService.create(createTeamDto);
+  async create(@Body() createTeamDto: CreateTeamDto) {
+    if (!(await this.teamsService.create(createTeamDto)))
+      throw new BadRequestException('cannot create a team');
   }
 
   @Get()
@@ -53,8 +59,10 @@ export class TeamsController {
 
   @Delete(':id')
   @Roles('admin')
+  @HttpCode(204)
   @UseGuards(RoleGuard)
-  remove(@Param('id', IdParamPipe) id: string) {
-    return this.teamsService.remove(id);
+  async remove(@Param('id', IdParamPipe) id: string) {
+    if (!(await this.teamsService.remove(id)))
+      throw new BadRequestException('cannot delete team');
   }
 }

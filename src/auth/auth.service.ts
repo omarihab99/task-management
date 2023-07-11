@@ -26,38 +26,39 @@ export class AuthService {
     });
     if (
       !user ||
-      !compareSync(signinDto.password + env().bcrypt.paper, user.password)
+      !compareSync(signinDto.password + env().bcrypt.paper, user.password || '')
     )
       throw new BadRequestException('incorrect email or password');
     const token = this.jwtService.sign({ userId: user.id });
-    return this.Users.save({ ...user, token });
+    await this.Users.save({ ...user, token });
+    return { token };
   }
 
   async signup(signupDto: SignupDto) {
-    const user = await this.Users.findOne({
-      where: [{ name: signupDto.name }, { email: signupDto.email }],
-    });
-    if (user) throw new BadRequestException('user already exists');
     return await this.Users.save(
       this.Users.create({ id: uuid(), ...signupDto }),
     );
   }
 
   async forgetPassword(data: ForgetPasswordDto) {
-    const user = await this.Users.findOne({ where: { email: data.email } });
-    if (!user) throw new BadRequestException('user not found');
-    const expirationCode = new Date(Date.now() + 2 * 60 * 1000);
-    return this.Users.save({
-      ...user,
-      token: null,
-      verificationCode: this.generateRandomVerificationCode(),
-      expirationCode,
-    });
+    const verificationCode = this.generateRandomVerificationCode();
+    const res = await this.Users.update(
+      { email: data.email },
+      {
+        token: null,
+        verificationCode,
+        expirationCode: new Date(Date.now() + 2 * 60 * 1000),
+      },
+    );
+    if (res.affected === 0)
+      throw new BadRequestException('cannot send verification code');
+    // TODO: send verification code by email
+    return { verificationCode };
   }
 
   private generateRandomVerificationCode() {
     const res = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       res.push((Math.random() + 1).toString(36).substring(2));
     }
     return res.join('');
@@ -74,7 +75,7 @@ export class AuthService {
       data.newPassword + env().bcrypt.paper,
       env().bcrypt.salt,
     );
-    return this.Users.save({
+    return await this.Users.save({
       ...user,
       password: hashedPassword,
       verificationCode: null,

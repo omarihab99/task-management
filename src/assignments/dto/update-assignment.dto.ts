@@ -5,11 +5,13 @@ export class UpdateAssignmentDto {
   id: string;
   @IsOptional()
   @IsUrl()
-  source: string;
+  source?: string;
   @IsOptional()
   @IsString()
+  comment?: string;
+}
+
+export class UpdateStatusDto {
+  id: string;
   status: 'done' | 'under review' | 'ask feedback';
-  @IsOptional()
-  @IsString()
-  comment: string;
 }
