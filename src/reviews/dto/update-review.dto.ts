@@ -11,7 +11,7 @@ export class UpdateReviewDto {
   @IsInt()
   @Min(1)
   @Max(5)
-  QDS: number;
+  QDS?: number;
   @IsOptional()
   @IsString()
   comment?: string;

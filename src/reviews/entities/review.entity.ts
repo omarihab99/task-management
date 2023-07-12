@@ -1,4 +1,5 @@
 import { Assignment } from 'src/assignments/entities/assignment.entity';
+import { Task } from 'src/tasks/entities/task.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
@@ -10,6 +11,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'reviews' })
+@Index('user_assignment_index', ['assignment', 'user'], { unique: true })
 export class Review {
   @Column({ primary: true, type: 'uuid' })
   id: string;
@@ -23,10 +25,10 @@ export class Review {
   createdAt: Date;
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
-  @ManyToOne(() => User, (user) => user.reviews)
-  @Index(['user', 'assignment'], { unique: true })
+  @ManyToOne(() => User, (user) => user.reviews, { onDelete: 'CASCADE' })
   user: User;
-  @ManyToOne(() => Assignment, (assignment) => assignment.reviews)
-  @Index(['user', 'assignment'], { unique: true })
+  @ManyToOne(() => Assignment, (assignment) => assignment.reviews, {
+    onDelete: 'CASCADE',
+  })
   assignment: Assignment;
 }

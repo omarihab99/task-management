@@ -40,7 +40,7 @@ export class ReviewsService {
       ).length > 1
     )
       throw new BadGatewayException('you already reviewed this task twice');
-    return await this.Reviews.save({
+    const review = await this.Reviews.save({
       id: uuid(),
       DS: data.DS,
       QDS: data.QDS,
@@ -48,10 +48,22 @@ export class ReviewsService {
       user,
       assignment,
     });
+    return {
+      id: review.id,
+      DS: review.DS,
+      QDS: review.QDS,
+      comment: review.comment,
+      user: { id: review.user.id, name: review.user.name },
+      assignment: { id: review.assignment.id },
+    };
   }
 
   async findOne(id: string) {
-    const review = await this.Reviews.findOneBy({ id });
+    const review = await this.Reviews.findOne({
+      where: { id },
+      relations: ['user', 'assignment'],
+      select: { user: { id: true, name: true }, assignment: { id: true } },
+    });
     if (!review) throw new WsException('review not found');
     return review;
   }
@@ -59,22 +71,31 @@ export class ReviewsService {
   async update(userId: string, data: UpdateReviewDto) {
     const review = await this.Reviews.findOne({
       where: { id: data.id },
-      relations: ['user'],
-      select: { user: { id: true } },
+      relations: ['user', 'assignment'],
+      select: { user: { id: true }, assignment: { id: true } },
     });
     if (!review) throw new WsException('review not found');
     if (review.user.id !== userId) throw new WsException('not allowed');
-    return await this.Reviews.update(review, data);
+    const newReview = await this.Reviews.save({ ...review, ...data });
+    return {
+      id: newReview.id,
+      DS: newReview.DS,
+      QDS: newReview.QDS,
+      comment: newReview.comment,
+      user: { id: newReview.user.id, name: newReview.user.name },
+      assignment: { id: review.assignment.id },
+    };
   }
 
   async remove(userId: string, id: string) {
     const review = await this.Reviews.findOne({
       where: { id },
       relations: ['user'],
-      select: { user: { id: true } },
+      select: { user: { id: true, name: true }, assignment: { id: true } },
     });
     if (!review) throw new WsException('review not found');
     if (review.user.id !== userId) throw new WsException('not allowed');
-    return await this.Reviews.remove(review);
+    await this.Reviews.delete({ id: review.id });
+    return review;
   }
 }

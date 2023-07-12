@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'assignments' })
+@Index('user_task_index', ['task', 'user'], { unique: true })
 export class Assignment {
   @Column({ primary: true, type: 'uuid' })
   id: string;
@@ -25,11 +26,11 @@ export class Assignment {
   createdAt: Date;
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
+  // @Index(['task', 'user'], { unique: true })
   @ManyToOne(() => Task, (task) => task.assignments, { onDelete: 'CASCADE' })
-  @Index(['task', 'user'], { unique: true })
   task: Task;
+  // @Index(['task', 'user'], { unique: true })
   @ManyToOne(() => User, (user) => user.assignments, { onDelete: 'CASCADE' })
-  @Index(['task', 'user'], { unique: true })
   user: User;
   @OneToMany(() => Review, (review) => review.assignment)
   reviews: Review[];
