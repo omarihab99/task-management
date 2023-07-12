@@ -1,4 +1,5 @@
 import { Assignment } from 'src/assignments/entities/assignment.entity';
+import { Feedback } from 'src/feedback/entities/feedback.entity';
 import { Review } from 'src/reviews/entities/review.entity';
 import { Team } from 'src/teams/entities/team.entity';
 import {
@@ -41,4 +42,6 @@ export class User {
   assignments: Assignment[];
   @OneToMany(() => Review, (review) => review.user)
   reviews: Review[];
+  @OneToMany(() => Feedback, (feedback) => feedback.user)
+  feedbacks: Feedback[];
 }

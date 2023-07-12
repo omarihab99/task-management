@@ -72,8 +72,12 @@ export class AssignmentsService {
     const user = await this.Users.findOneBy({ id: userId });
     const assignment = await this.Assignments.findOne({
       where: { id: data.id },
-      relations: ['user', 'reviews'],
-      select: { user: { id: true }, reviews: { id: true } },
+      relations: ['user', 'reviews', 'feedbacks'],
+      select: {
+        user: { id: true },
+        reviews: { id: true },
+        feedbacks: { id: true },
+      },
     });
     if (!assignment) throw new WsException('assignment not found');
     if (data.status === 'ask feedback') {
@@ -81,10 +85,11 @@ export class AssignmentsService {
         throw new WsException('cannot edit this assignment');
       if (assignment.reviews.length < 2)
         throw new WsException('must be reviewed by 2 users');
-    } else if (data.status === 'done' && user.role !== 'coach')
-      // TODO: check if coach created the feedback
+    } else if (data.status === 'done' && user.role !== 'coach') {
+      if (!assignment.feedbacks)
+        throw new WsException('assignment has not a feedback');
       throw new WsException('Forbidden');
-    else throw new WsException('cannot udpate status');
+    } else throw new WsException('cannot udpate status');
     await this.Assignments.update(
       { id: assignment.id },
       { status: data.status },
@@ -108,7 +113,7 @@ export class AssignmentsService {
   }
 
   private assignmentFilter = {
-    relations: ['user', 'task', 'user.team'],
+    relations: ['user', 'task', 'user.team', 'reviews'],
     select: {
       id: true,
       source: true,

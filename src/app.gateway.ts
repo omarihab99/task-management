@@ -18,16 +18,6 @@ export class AppGateway implements OnGatewayConnection {
     private jwtService: JwtService,
   ) {}
 
-  @SubscribeMessage('helloSocket')
-  async create(
-    @ConnectedSocket() client: Socket,
-    @MessageBody()
-    data: unknown,
-  ) {
-    console.log(data);
-    return client.emit('helloSocket', data);
-  }
-
   async handleConnection(client: Socket, ...args: any[]) {
     const [tokenType, token] = (
       client.handshake.headers.authorization || ''
@@ -38,6 +28,7 @@ export class AppGateway implements OnGatewayConnection {
     const user = await this.authUserToken(payload.userId, token);
     if (!user) return client.disconnect();
     client.join(user.role);
+    client.join(user.id);
     if (user.team) client.join(user.team.id);
   }
 

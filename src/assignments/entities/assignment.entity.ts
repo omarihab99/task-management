@@ -1,3 +1,4 @@
+import { Feedback } from 'src/feedback/entities/feedback.entity';
 import { Review } from 'src/reviews/entities/review.entity';
 import { Task } from 'src/tasks/entities/task.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -27,11 +28,21 @@ export class Assignment {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt: Date;
   // @Index(['task', 'user'], { unique: true })
-  @ManyToOne(() => Task, (task) => task.assignments, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Task, (task) => task.assignments, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
   task: Task;
   // @Index(['task', 'user'], { unique: true })
-  @ManyToOne(() => User, (user) => user.assignments, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.assignments, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
   user: User;
   @OneToMany(() => Review, (review) => review.assignment)
   reviews: Review[];
+  @OneToMany(() => Feedback, (feedback) => feedback.assignment, {
+    onDelete: 'CASCADE',
+  })
+  feedbacks: Feedback[];
 }

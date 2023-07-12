@@ -17,6 +17,8 @@ import { AssignmentsModule } from './assignments/assignments.module';
 import { Assignment } from './assignments/entities/assignment.entity';
 import { ReviewsModule } from './reviews/reviews.module';
 import { Review } from './reviews/entities/review.entity';
+import { FeedbackModule } from './feedback/feedback.module';
+import { Feedback } from './feedback/entities/feedback.entity';
 
 @Module({
   imports: [
@@ -35,7 +37,7 @@ import { Review } from './reviews/entities/review.entity';
       port: env().postgres.port,
       synchronize: true,
       logging: false,
-      entities: [User, Team, Task, Assignment, Review],
+      entities: [User, Team, Task, Assignment, Review, Feedback],
     }),
     TypeOrmModule.forFeature([User]),
     UsersModule,
@@ -44,6 +46,7 @@ import { Review } from './reviews/entities/review.entity';
     TasksModule,
     AssignmentsModule,
     ReviewsModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppGateway],

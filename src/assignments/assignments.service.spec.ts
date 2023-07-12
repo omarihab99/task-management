@@ -12,6 +12,7 @@ import { AssignmentsService } from './assignments.service';
 import env from 'src/config/env';
 import { v4 as uuid } from 'uuid';
 import { hashSync } from 'bcrypt';
+import { Feedback } from 'src/feedback/entities/feedback.entity';
 
 describe('AssignmentsServices', () => {
   let service: AssignmentsService;
@@ -39,9 +40,9 @@ describe('AssignmentsServices', () => {
           port: env().postgres.port,
           synchronize: true,
           logging: false,
-          entities: [User, Team, Task, Assignment, Review],
+          entities: [User, Team, Task, Assignment, Review, Feedback],
         }),
-        TypeOrmModule.forFeature([User, Team, Task, Assignment]),
+        TypeOrmModule.forFeature([User, Team, Task, Assignment, Review]),
       ],
       providers: [AssignmentsService],
     }).compile();
@@ -108,6 +109,7 @@ describe('AssignmentsServices', () => {
         'updatedAt',
         'user',
         'task',
+        'reviews',
       ]);
       expect(Object.keys(assignment1.user)).toEqual(['id', 'name', 'team']);
       expect(Object.keys(assignment1.task)).toEqual([
@@ -143,6 +145,7 @@ describe('AssignmentsServices', () => {
         'updatedAt',
         'user',
         'task',
+        'reviews',
       ]);
       expect(Object.keys(assignments[0].user)).toEqual(['id', 'name', 'team']);
       expect(Object.keys(assignments[0].task)).toEqual([
@@ -164,6 +167,7 @@ describe('AssignmentsServices', () => {
         'updatedAt',
         'user',
         'task',
+        'reviews',
       ]);
       expect(Object.keys(assignment.user)).toEqual(['id', 'name', 'team']);
       expect(Object.keys(assignment.task)).toEqual([
@@ -192,6 +196,7 @@ describe('AssignmentsServices', () => {
         'updatedAt',
         'user',
         'task',
+        'reviews',
       ]);
       expect(Object.keys(assignment.user)).toEqual(['id', 'name', 'team']);
       expect(Object.keys(assignment.task)).toEqual([
