@@ -1,5 +1,6 @@
 export default () => ({
   port: process.env.PORT || 5000,
+  frontUrl: process.env.FRONT_URL,
   environment: process.env.ENV,
   postgres: {
     db:
@@ -15,5 +16,11 @@ export default () => ({
   bcrypt: {
     paper: process.env.PAPER,
     salt: +(process.env.SALT || '1'),
+  },
+  mailer: {
+    username: process.env.MAIL_USER,
+    password: process.env.MAIL_PASSWORD,
+    port: +(process.env.MAIL_PORT || '1'),
+    host: process.env.MAIL_HOST,
   },
 });

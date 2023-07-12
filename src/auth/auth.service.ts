@@ -12,6 +12,7 @@ import {
   ForgetPasswordDto,
   ResetUserPasswordDto,
 } from './dto/forget-password.dto';
+import { sendMail } from 'src/config/mailer';
 
 @Injectable()
 export class AuthService {
@@ -52,7 +53,15 @@ export class AuthService {
     );
     if (res.affected === 0)
       throw new BadRequestException('cannot send verification code');
-    // TODO: send verification code by email
+    if (env().environment === 'production') {
+      sendMail(
+        data.email,
+        'Task Management System, Verification Code',
+        `press the link below to reset your password
+        ${verificationCode}`,
+      );
+      return;
+    }
     return { verificationCode };
   }
 
