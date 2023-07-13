@@ -7,7 +7,7 @@ export class Team {
   id: string;
   @Column()
   name: string;
-  @OneToOne(() => User, { onDelete: 'CASCADE', nullable: true })
+  @OneToOne(() => User, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn()
   cordinator: User;
   @OneToMany(() => User, (user) => user.team, { nullable: true })

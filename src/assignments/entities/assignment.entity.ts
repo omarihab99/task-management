@@ -42,7 +42,7 @@ export class Assignment {
   @OneToMany(() => Review, (review) => review.assignment)
   reviews: Review[];
   @OneToMany(() => Feedback, (feedback) => feedback.assignment, {
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
   })
   feedbacks: Feedback[];
 }

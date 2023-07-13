@@ -19,8 +19,6 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { Review } from './reviews/entities/review.entity';
 import { FeedbackModule } from './feedback/feedback.module';
 import { Feedback } from './feedback/entities/feedback.entity';
-import { SeederModule } from './seeder/seeder.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [env] }),
@@ -48,7 +46,6 @@ import { SeederModule } from './seeder/seeder.module';
     AssignmentsModule,
     ReviewsModule,
     FeedbackModule,
-    SeederModule,
   ],
   controllers: [AppController],
   providers: [AppService, AppGateway],
