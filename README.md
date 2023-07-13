@@ -1,4 +1,4 @@
-# Tasmk Management System
+# Task Management System
 
 The task management system API is a web-based application built using the Nest framework that enables managers to create tasks for trainee employees. The system allows managers to assign a task to one or multiple trainees, set a deadline, and provide instructions or additional details for the task.
 
