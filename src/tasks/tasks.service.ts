@@ -39,4 +39,8 @@ export class TasksService {
     await this.Tasks.remove(task);
     return task;
   }
+
+  async countTasks() {
+    return { count: await this.Tasks.count() };
+  }
 }

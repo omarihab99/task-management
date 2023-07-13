@@ -112,6 +112,38 @@ export class AssignmentsService {
     return assignment;
   }
 
+  async getCountUsersWhoAssignTasks() {
+    const queryBuilder = this.Tasks.createQueryBuilder('tasks');
+    queryBuilder
+      .innerJoinAndSelect('tasks.assignments', 'assignments')
+      .select('tasks.id', 'id')
+      .addSelect('tasks.title', 'title')
+      .addSelect('tasks.topic', 'topic')
+      .addSelect('tasks.sprint', 'sprint')
+      .addSelect('tasks.deadlineAt', 'deadline')
+      .addSelect('tasks.createdAt', 'createdAt')
+      .addSelect('tasks.updatedAt', 'updatedAt')
+      .addSelect('count(assignments)', 'count')
+      .groupBy('tasks.id');
+    return await queryBuilder.getRawMany();
+  }
+  async getCountUsersWhoAssignTaskById(taskId: string) {
+    const queryBuilder = this.Tasks.createQueryBuilder('tasks');
+    queryBuilder
+      .innerJoinAndSelect('tasks.assignments', 'assignments')
+      .where('tasks.id=:taskId', { taskId })
+      .select('tasks.id', 'id')
+      .addSelect('tasks.title', 'title')
+      .addSelect('tasks.topic', 'topic')
+      .addSelect('tasks.sprint', 'sprint')
+      .addSelect('tasks.deadlineAt', 'deadline')
+      .addSelect('tasks.createdAt', 'createdAt')
+      .addSelect('tasks.updatedAt', 'updatedAt')
+      .addSelect('count(assignments)', 'count')
+      .groupBy('tasks.id');
+    return await queryBuilder.getRawOne();
+  }
+
   private assignmentFilter = {
     relations: ['user', 'task', 'user.team', 'reviews'],
     select: {

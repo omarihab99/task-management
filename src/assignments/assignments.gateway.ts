@@ -24,6 +24,7 @@ import { FindAssignmentDto } from './dto/find-assignment.dto';
 import { Roles } from 'src/shared/decorators/role.decorator';
 import { RoleGuard } from 'src/shared/guards/role.guard';
 import { StatusPipe } from './pipes/status.pipe';
+import { FindTaskDto } from 'src/tasks/dto/find-task.dto';
 
 @WebSocketGateway()
 @UseFilters(new AllExceptionsFilter())
@@ -123,5 +124,28 @@ export class AssignmentsGateway {
       body.id,
     );
     this.server.emit('deleteExistsAssignment', assignment);
+  }
+
+  @Roles('admin')
+  @UseGuards(RoleGuard)
+  @SubscribeMessage('assignmentCount')
+  async getCountUsersWhoAssignTasks(@ConnectedSocket() client: Socket) {
+    client.emit(
+      'response',
+      await this.assignmentsService.getCountUsersWhoAssignTasks(),
+    );
+  }
+  @Roles('admin')
+  @UseGuards(RoleGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @SubscribeMessage('assignmentCountByTask')
+  async getCountUsersWhoAssignTaskById(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() idDto: FindTaskDto,
+  ) {
+    client.emit(
+      'response',
+      await this.assignmentsService.getCountUsersWhoAssignTaskById(idDto.id),
+    );
   }
 }

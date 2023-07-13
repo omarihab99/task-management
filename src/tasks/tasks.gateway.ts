@@ -83,4 +83,11 @@ export class TasksGateway {
       await this.tasksService.remove(removeTaskDto.id),
     );
   }
+
+  @Roles('admin')
+  @UseGuards(RoleGuard)
+  @SubscribeMessage('countTasks')
+  async countTasks(@ConnectedSocket() client: Socket) {
+    client.emit('response', await this.tasksService.countTasks());
+  }
 }

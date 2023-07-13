@@ -72,4 +72,8 @@ export class TeamsService {
   async remove(id: string) {
     return (await this.Teams.delete({ id })).affected > 0;
   }
+
+  async countTeams() {
+    return { count: await this.Teams.count() };
+  }
 }

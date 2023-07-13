@@ -77,4 +77,13 @@ export class UsersService {
     });
     return res.affected > 0;
   }
+
+  getUsersCountsByRole() {
+    const queryBuilder = this.Users.createQueryBuilder('users');
+    queryBuilder
+      .select('role')
+      .addSelect('count(role)', 'count')
+      .groupBy('role');
+    return queryBuilder.getRawMany<{ role: string; count: number }>();
+  }
 }

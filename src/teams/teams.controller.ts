@@ -28,6 +28,13 @@ import { DbExceptionFilter } from 'src/shared/filters/http-filters/db-exception.
 export class TeamsController {
   constructor(private readonly teamsService: TeamsService) {}
 
+  @Get('count-teams')
+  @Roles('admin')
+  @UseGuards(RoleGuard)
+  countTeams() {
+    return this.teamsService.countTeams();
+  }
+
   @Post()
   @Roles('admin')
   @UseGuards(RoleGuard)

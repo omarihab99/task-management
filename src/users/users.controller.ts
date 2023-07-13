@@ -34,6 +34,13 @@ import { DbExceptionFilter } from 'src/shared/filters/http-filters/db-exception.
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('count-roles')
+  @Roles('admin')
+  @UseGuards(RoleGuard)
+  getUsersCountByRole() {
+    return this.usersService.getUsersCountsByRole();
+  }
+
   @Get()
   findAll() {
     return this.usersService.findAll();
