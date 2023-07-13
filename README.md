@@ -30,9 +30,9 @@ The API is designed to be user-friendly and intuitive, with a clean and simple i
 **Sample request to try out.** `http://localhost:3000`
 
 ## Ports
-The API runs on port `3000`
-The Socket connection runs on port `3000`
-The Database connection runs on port `5432`
+- The API runs on port `3000`
+- The Socket connection runs on port `3000`
+- The Database connection runs on port `5432`
 
 ## Setup for .env file
 ``` bash
