@@ -87,7 +87,7 @@ export class AssignmentsService {
         throw new WsException('must be reviewed by 2 users');
     } else if (data.status === 'done' && user.role !== 'coach') {
       if (!assignment.feedbacks)
-        throw new WsException('assignment has not a feedback');
+        throw new WsException('assignment does not have a feedback');
       throw new WsException('Forbidden');
     } else throw new WsException('cannot udpate status');
     await this.Assignments.update(
